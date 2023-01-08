@@ -16,23 +16,12 @@
 package com.example.android.unscramble.ui
 
 import android.app.Activity
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -66,8 +55,9 @@ fun GameScreen(
         GameLayout(
             currentScrambledWord = gameUiState.currentScrambledWord,
             userGuess = gameViewModel.userGuess,
+            isGuessWrong = gameUiState.isGuessedWordWrong,
             onUserGuessChanged = { gameViewModel.updateUserGuess(it) },
-            onKeyboardDone = {}
+            onKeyboardDone = { gameViewModel.checkUserGuess() }
         )
         Row(
             modifier = modifier
@@ -89,7 +79,7 @@ fun GameScreen(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(start = 8.dp),
-                onClick = { }
+                onClick = { gameViewModel.checkUserGuess() }
             ) {
                 Text(stringResource(R.string.submit))
             }
@@ -123,6 +113,7 @@ fun GameStatus(modifier: Modifier = Modifier) {
 fun GameLayout(
     modifier: Modifier = Modifier,
     currentScrambledWord: String,
+    isGuessWrong: Boolean,
     userGuess: String,
     onUserGuessChanged: (String) -> Unit,
     onKeyboardDone: () -> Unit
@@ -146,8 +137,14 @@ fun GameLayout(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             onValueChange = onUserGuessChanged,
-            label = { Text(stringResource(R.string.enter_your_word)) },
-            isError = false,
+            label = {
+                if (isGuessWrong) {
+                    Text(stringResource(R.string.wrong_guess))
+                } else {
+                    Text(stringResource(R.string.enter_your_word))
+                }
+            },
+            isError = isGuessWrong,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
